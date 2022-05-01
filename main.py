@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pylinac import WinstonLutz
+from tempfile import NamedTemporaryFile
 
 app = FastAPI()
 
@@ -34,13 +35,17 @@ async def pdf(file: UploadFile):
 async def results(file: UploadFile):
 
     try:
-        wl = WinstonLutz.from_zip(file.filename)
+        contents = await file.read()
+        file_copy = NamedTemporaryFile(delete=False)
+        with file_copy as f:
+            f.write(contents)
+        wl = WinstonLutz.from_zip(file_copy.name)
         wl.analyze()
         data_dict = wl.results_data(as_dict=True)
 
         return data_dict
     except Exception as e:
-        return print(e)
+        return {"exception": print(e)}
 
 
 @app.get("/testapi/")
