@@ -1,8 +1,10 @@
+from tempfile import NamedTemporaryFile
+from datetime import datetime, timezone
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pylinac import WinstonLutz
-from tempfile import NamedTemporaryFile
+
 
 app = FastAPI()
 
@@ -23,12 +25,22 @@ async def root():
 @app.post("/pdf/")
 async def pdf(file: UploadFile):
 
-    wl = WinstonLutz.from_zip(file.filename)
-    wl.analyze()
-    # data_dict = wl.results_data(as_dict=True)
-    wl.publish_pdf("temp/mywl.pdf")
+    try:
+        contents = await file.read()
+        file_copy = NamedTemporaryFile(delete=False)
+        with file_copy as f:
+            f.write(contents)
+        wl = WinstonLutz.from_zip(file_copy.name)
+        wl.analyze()
+        filename = "WL_result_{}.pdf".format(
+            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        wl.publish_pdf(filename)
 
-    return FileResponse("temp/mywl.pdf")
+        return FileResponse(filename)
+
+    except Exception as e:
+        return {"exception": print(e)}
 
 
 @app.post("/results/")
@@ -42,8 +54,8 @@ async def results(file: UploadFile):
         wl = WinstonLutz.from_zip(file_copy.name)
         wl.analyze()
         data_dict = wl.results_data(as_dict=True)
-
         return data_dict
+
     except Exception as e:
         return {"exception": print(e)}
 
