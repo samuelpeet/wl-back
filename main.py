@@ -1,5 +1,6 @@
 from tempfile import NamedTemporaryFile
 from datetime import datetime, timezone
+import json
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +38,9 @@ async def pdf(file: UploadFile):
         )
         wl.publish_pdf(filename)
 
-        return FileResponse(filename, media_type="application/pdf")
+        return FileResponse(
+            filename, media_type="application/pdf", filename="filename.pdf"
+        )
 
     except Exception as e:
         return {"exception": print(e)}
@@ -54,13 +57,7 @@ async def results(file: UploadFile):
         wl = WinstonLutz.from_zip(file_copy.name)
         wl.analyze()
         data_dict = wl.results_data(as_dict=True)
-        return data_dict
+        return json.dumps(data_dict, indent=4)
 
     except Exception as e:
         return {"exception": print(e)}
-
-
-@app.get("/testapi/")
-async def testapi():
-
-    return {"message": "It works!"}
