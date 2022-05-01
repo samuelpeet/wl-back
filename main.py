@@ -37,7 +37,7 @@ async def pdf(file: UploadFile):
         )
         wl.publish_pdf(filename)
 
-        return FileResponse(filename)
+        return FileResponse(filename, media_type="application/pdf")
 
     except Exception as e:
         return {"exception": print(e)}
