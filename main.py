@@ -33,11 +33,14 @@ async def pdf(file: UploadFile):
 @app.post("/results/")
 async def results(file: UploadFile):
 
-    wl = WinstonLutz.from_zip(file.filename)
-    wl.analyze()
-    data_dict = wl.results_data(as_dict=True)
+    try:
+        wl = WinstonLutz.from_zip(file.filename)
+        wl.analyze()
+        data_dict = wl.results_data(as_dict=True)
 
-    return data_dict
+        return data_dict
+    except Exception as e:
+        return print(e)
 
 
 @app.get("/testapi/")
