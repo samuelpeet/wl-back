@@ -24,8 +24,14 @@ async def pdf(file: UploadFile):
 @app.post("/results/")
 async def results(file: UploadFile):
 
-    wl = WinstonLutz.from_zip("winston_lutz.zip")
+    wl = WinstonLutz.from_zip(file.filename)
     wl.analyze()
     data_dict = wl.results_data(as_dict=True)
 
     return data_dict
+
+
+@app.get("/testapi/")
+async def testapi():
+
+    return {"message": "It works!"}
