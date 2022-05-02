@@ -57,7 +57,7 @@ async def results(file: UploadFile):
         wl = WinstonLutz.from_zip(file_copy.name)
         wl.analyze()
         data_dict = wl.results_data(as_dict=True)
-        return json.dumps(data_dict, indent=4)
+        return data_dict
 
     except Exception as e:
         return {"exception": print(e)}
